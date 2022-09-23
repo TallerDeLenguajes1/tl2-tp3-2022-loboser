@@ -156,7 +156,7 @@ namespace tp3
         }
 
         static void Informe(Cadeteria Cadeteria){
-            //escribir informe mediante foreach
+            //escribir informe mediante linq
         }
     }
 }
