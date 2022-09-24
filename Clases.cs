@@ -22,12 +22,12 @@ namespace tp3
         private int nro;
         private string obs;
         private Cliente cliente;
-        private bool estado;
+        private string estado;
 
         public int Nro { get => nro; set => nro = value; }
         public string Obs { get => obs; set => obs = value; }
         public Cliente Cliente { get => cliente; set => cliente = value; }
-        public bool Estado { get => estado; set => estado = value; }
+        public string Estado { get => estado; set => estado = value; }
     }
 
     public class Cadete : Persona {
@@ -36,7 +36,7 @@ namespace tp3
         public List<Pedidos> ListadoPedidos { get => listadoPedidos; set => listadoPedidos = value; }
 
         int JornalACobrar(){
-            return listadoPedidos.Count()*300;
+            return listadoPedidos.Where(t => t.Estado == "Entregado").Count()*300;
         }
     }
 
