@@ -44,7 +44,7 @@ namespace tp3
             Cadeteria Cadeteria = new Cadeteria();
 
             Cadeteria.Nombre = "Cadeteria Of";
-            Cadeteria.Telefono = "+5493816249326";
+            Cadeteria.Telefono = "+549381342574";
             Cadeteria.ListadoCadetes = new List<Cadete>();
  
             Cadeteria.ListadoCadetes = CargarCadetes(id);
