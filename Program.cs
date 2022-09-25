@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace tp3
 {
-    
     public class Program {
         public static void Main(string[] args){
+            Console.Clear();
             int option = 1, id=1, nro=1;
             Cadeteria Cadeteria = CargarCadeteria(id);
             List<Pedidos> ListaPedidosSinAsignar = new List<Pedidos>();
@@ -13,8 +13,9 @@ namespace tp3
 
             do
             {
-            Console.Write("Seleccionar opcion: ");
-            option = Convert.ToInt32(Console.ReadLine());
+            Console.Write("1. Dar alta a pedidos\n2. Asignar pedidos a cadetes\n3. Cambiar de estado los pedidos\n4. Cambiar pedidos de cadetes\n5. Realizar Informe de la jornada\n\nSeleccionar opcion: ");
+            int.TryParse(Console.ReadLine(), out option);
+            Console.Clear();
                 switch (option)
                 {
                     case 1:
@@ -23,13 +24,31 @@ namespace tp3
                         nro++;
                         break;
                     case 2:
-                        ListaPedidosAsignados.Add(AsignarACadete(ListaPedidosSinAsignar, Cadeteria));
+                        if (ListaPedidosSinAsignar.Count() > 0 && Cadeteria.ListadoCadetes.Count > 0)
+                        {
+                            ListaPedidosAsignados.Add(AsignarACadete(ListaPedidosSinAsignar, Cadeteria.ListadoCadetes));
+                        }else
+                        {
+                            Console.WriteLine("No existen cadetes o pedidos sin asignar!");
+                        }
                         break;
                     case 3:
-                        CambiarDeEstado(ListaPedidosSinAsignar, ListaPedidosAsignados);
+                        if (ListaPedidosSinAsignar.Count() > 0 || ListaPedidosAsignados.Count() > 0)
+                        {
+                            CambiarDeEstado(ListaPedidosSinAsignar, ListaPedidosAsignados);
+                        }else
+                        {
+                            Console.WriteLine("No existen pedidos!");
+                        }
                         break;
                     case 4:
-                        CambiarDeCadete(Cadeteria.ListadoCadetes);
+                        if (Cadeteria.ListadoCadetes.Count() > 1 && ListaPedidosAsignados.Count > 0)
+                        {
+                            CambiarDeCadete(Cadeteria.ListadoCadetes);
+                        }else
+                        {
+                            Console.WriteLine("No existe la cantidad suficiente de cadetes para hacer un cambio!");
+                        }
                         break;
                     case 5:
                         Informe(Cadeteria.ListadoCadetes);
@@ -75,7 +94,7 @@ namespace tp3
                 }
             }else
             {
-                
+                Console.WriteLine("El Archivo Datos.csv no existe!");
             }
             
             return Cadetes;
@@ -86,10 +105,11 @@ namespace tp3
 
             Pedido.Nro = nro;
             Console.Write("Observacion: ");
-            Pedido.Obs = Console.ReadLine().ToString();
+            Pedido.Obs = Console.ReadLine();     //cargar datos
             Pedido.Cliente = CargarCliente(id);
             Pedido.Estado = "En Proceso";
             nro++;
+            Console.Clear();
 
             return Pedido;
         }
@@ -98,7 +118,7 @@ namespace tp3
             Cliente Cliente = new Cliente();
 
             Cliente.Id = id;
-            Cliente.Nombre = "";
+            Cliente.Nombre = "";                    //ingreso de datos
             Cliente.Direccion = "";
             Cliente.Telefono = "";
             Cliente.DatosReferenciaDireccion = "";
@@ -107,28 +127,38 @@ namespace tp3
             return Cliente;
         }
 
-        static Pedidos AsignarACadete(List<Pedidos> ListaPedidosSinAsignar, Cadeteria Cadeteria){
+        static Pedidos AsignarACadete(List<Pedidos> ListaPedidosSinAsignar, List<Cadete> Cadetes){
             int option = 0;
 
             ListaPedidosSinAsignar
-            .ForEach(t => Console.WriteLine($"{t.Nro}. Cliente: {t.Cliente.Nombre} Direccion: {t.Cliente.Direccion} Referencia: {t.Cliente.DatosReferenciaDireccion} Estado: {t.Estado}"));
+            .ForEach(t => Console.WriteLine($"{t.Nro}. Obs:{t.Obs} Cliente: {t.Cliente.Nombre} Direccion: {t.Cliente.Direccion} Referencia: {t.Cliente.DatosReferenciaDireccion} Estado: {t.Estado}"));
 
             // seleccionado del pedido a asignar
-            Console.Write("Seleccionar pedido a asignar: ");
-            option = Convert.ToInt32(Console.ReadLine());
+            do
+            {
+                Console.Write("Seleccionar pedido a asignar: ");
+                int.TryParse(Console.ReadLine(), out option);
+            } while (ListaPedidosSinAsignar.Find(t => t.Nro == Convert.ToInt32(option)) == null);
+            Console.Clear();
+            
 
             Pedidos Pedido = ListaPedidosSinAsignar
             .First(t => t.Nro == Convert.ToInt32(option));
 
             //escribir lista de cadetes
-            Cadeteria.ListadoCadetes
+            Cadetes
             .ForEach(t => Console.WriteLine($"{t.Id}. Cadete: {t.Nombre}"));
 
             // seleccionado de cadete para el pedido
-            Console.Write("Seleccionar cadete a asignar: ");
-            option = Convert.ToInt32(Console.ReadLine());
+            do
+            {
+                Console.Write("Seleccionar cadete a asignar: ");
+                int.TryParse(Console.ReadLine(), out option);
+            } while (Cadetes.Find(t => t.Id == Convert.ToInt32(option)) == null);
+            Console.Clear();
 
-            Cadeteria.ListadoCadetes
+
+            Cadetes
             .First(t => t.Id == Convert.ToInt32(option)).ListadoPedidos.Add(Pedido);
             ListaPedidosSinAsignar.Remove(Pedido);
 
@@ -151,47 +181,61 @@ namespace tp3
             }
 
             // seleccionar el pedido a cambiar el estado
-            Console.Write("Seleccionar pedido a cambiar de estado: ");
-            i = Convert.ToInt32(Console.ReadLine())-1;
+            do
+            {  
+                Console.Write("Seleccionar pedido a cambiar de estado: ");
+                i = Convert.ToInt32(Console.ReadLine())-1;
 
-            if(i <= ListaPedidosSinAsignar.Count()-1){
-                if (ListaPedidosSinAsignar[i].Estado == "Entregado")
+                if(i <= ListaPedidosSinAsignar.Count()-1){
+                    if (ListaPedidosSinAsignar[i].Estado == "Entregado")
+                    {
+                        ListaPedidosSinAsignar[i].Estado = "En Proceso";
+                    }else
+                    {
+                        ListaPedidosSinAsignar[i].Estado = "Entregado";
+                    }
+                    //cambiar el estado
+                }else if(i >= ListaPedidosSinAsignar.Count())
                 {
-                    ListaPedidosSinAsignar[i].Estado = "En Proceso";
-                }else
-                {
-                    ListaPedidosSinAsignar[i].Estado = "Entregado";
+                    if (ListaPedidosAsignados[i-ListaPedidosSinAsignar.Count()].Estado == "Entregado")
+                    {
+                        ListaPedidosAsignados[i-ListaPedidosSinAsignar.Count()].Estado = "En Proceso";
+                    }else
+                    {
+                        ListaPedidosAsignados[i-ListaPedidosSinAsignar.Count()].Estado = "Entregado";
+                    }
                 }
-                //cambiar el estado
-            }else if(i >= ListaPedidosSinAsignar.Count())
-            {
-                if (ListaPedidosAsignados[i-ListaPedidosSinAsignar.Count()].Estado == "Entregado")
-                {
-                    ListaPedidosAsignados[i-ListaPedidosSinAsignar.Count()].Estado = "En Proceso";
-                }else
-                {
-                    ListaPedidosAsignados[i-ListaPedidosSinAsignar.Count()].Estado = "Entregado";
-                }
-            }
+            } while (i<0 || i> ListaPedidosSinAsignar.Count() + ListaPedidosAsignados.Count()-1);
+            Console.Clear();
         }
 
         static void CambiarDeCadete(List<Cadete> ListadoCadetes){
             int i = 0, j = 1;
-            int[] aux = new int[ListadoCadetes.Count()];
+            //int[] aux = new int[ListadoCadetes.Where(t => t.ListadoPedidos.Count()!=0).ToList().Count()];             //idea anterior para que solo se pueda seleccionar los cadetes que tenian pedidos
+
             //escribir cadetes solo con pedidos
-            foreach (var Cadete in ListadoCadetes.Where(t => t.ListadoPedidos.Count()!=0).ToList())
+
+            ListadoCadetes.Where(t => t.ListadoPedidos.Count()!=0).ToList()
+            .ForEach(t => Console.WriteLine($"ID: {t.Id} Cadete: {t.Nombre}"));
+
+            /*
+            foreach (var Cadete in ListadoCadetes.Where(t => t.ListadoPedidos.Count()!=0).ToList())         //Escribia los id de los cadetes con pedidos en un array
             {
                 Console.WriteLine($"ID: {Cadete.Id} Cadete: {Cadete.Nombre}");
                 aux[i] = Cadete.Id;
                 i++;
             }
+            */
             
             //seleccionar cadete con i
             do
             {
-            Console.Write("Seleccionar el id del cadete con el pedido a cambiar: ");
-            i = Convert.ToInt32(Console.ReadLine());
-            } while (aux.Contains(i)==false);
+                Console.Write("Seleccionar el id del cadete con el pedido a cambiar: ");
+                int.TryParse(Console.ReadLine(), out i);
+            } while (ListadoCadetes.Where(t => t.ListadoPedidos.Count()!=0).ToList().Find(t => t.Id == i) == null);
+            //} while (aux.Contains(i)==false);                                                                         //Verificaba si el array contenia el id seleccionado
+            Console.Clear();
+
             //escribe los pedidos de ese cadete
             foreach (var t in ListadoCadetes.First(t => t.Id == i).ListadoPedidos)
             {
@@ -200,10 +244,13 @@ namespace tp3
             }
 
             //seleccionar pedido usando j 
-            Console.Write("Seleccionar pedido a cambiar: ");
-            j = Convert.ToInt32(Console.ReadLine())-1;
+            do
+            {
+                Console.Write("Seleccionar pedido a cambiar: ");
+                int.TryParse(Console.ReadLine(), out j);
+            } while (j < 1 || j > ListadoCadetes.First(t => t.Id == i).ListadoPedidos.Count());
 
-            Pedidos Pedido = ListadoCadetes.First(t => t.Id == i).ListadoPedidos[j];
+            Pedidos Pedido = ListadoCadetes.First(t => t.Id == i).ListadoPedidos[j-1];
 
             ListadoCadetes.Where(t => t.Id != i).ToList()
             .ForEach(t => Console.WriteLine($"{t.Id}. Cadete {t.Nombre}"));
@@ -211,11 +258,12 @@ namespace tp3
             do
             {
                 Console.Write("Seleccionar cadete: ");
-                j = Convert.ToInt32(Console.ReadLine());
-            } while (j == i || j<0 || j>ListadoCadetes.Count());  
+                int.TryParse(Console.ReadLine(), out j);
+            } while (j == i || j<1 || j>ListadoCadetes.Count());  
+            Console.Clear();
             
             //seleccionar cadete otra vez reutilizando j
-            ListadoCadetes[j].ListadoPedidos.Add(Pedido);
+            ListadoCadetes.First(t => t.Id == j).ListadoPedidos.Add(Pedido);
             ListadoCadetes.First(t => t.Id == i).ListadoPedidos.Remove(Pedido);
         }
 
@@ -225,16 +273,11 @@ namespace tp3
             
             foreach (var Cadete in ListadoCadetes)
             {
-                monto = 0;
-                cant = 0;
-                foreach (var Pedidos in Cadete.ListadoPedidos)
-                {
-                    if (Pedidos.Estado == "Entregado")
-                    {
-                        monto += 300;
-                        cant++;
-                    }
-                }
+                cant = Cadete.ListadoPedidos
+                .Where(t => t.Estado == "Entregado").ToList().Count();
+
+                monto = cant*300;
+
                 total += monto;
                 cantProm += cant;
                 Console.WriteLine($"{Cadete.Id}. Cadete: {Cadete.Nombre} Monto ganado: {monto} Cantidad de envios realizados: {cant}");
